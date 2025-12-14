@@ -216,4 +216,3 @@ npm run db:studio    # Open Prisma Studio
 ## License
 
 MIT
-
