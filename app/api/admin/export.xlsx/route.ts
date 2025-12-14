@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma'
 import { verifyAdminSession } from '@/lib/admin-auth'
 import ExcelJS from 'exceljs'
 
+export const dynamic = 'force-dynamic'
+
 export async function GET() {
   try {
     const isAuthenticated = await verifyAdminSession()
