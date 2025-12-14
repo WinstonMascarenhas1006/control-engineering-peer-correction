@@ -1,0 +1,16 @@
+USE THIS CONNECTION STRING:
+
+postgres://6fca5a2243b8854781a81848fed0d80cbbcd705727ea88c4ff0d5ab1d27eccad:sk_ETBFikANMeSdhQ4rGJQS7@db.prisma.io:5432/postgres?sslmode=require
+
+This is the standard PostgreSQL connection string.
+
+DO NOT use the prisma+postgres:// one - that's Prisma Accelerate (optional service).
+
+Steps:
+1. Copy the connection string above
+2. Go to Vercel -> Settings -> Environment Variables
+3. Update DATABASE_URL with this connection string
+4. Redeploy your app
+5. Run: .\setup-database-simple.ps1
+6. Paste the same connection string when prompted
+
