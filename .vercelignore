@@ -1,0 +1,12 @@
+node_modules
+.next
+.env
+.env.local
+.env*.local
+*.log
+.DS_Store
+docker-compose.yml
+run.ps1
+SETUP.md
+DEPLOY.md
+
