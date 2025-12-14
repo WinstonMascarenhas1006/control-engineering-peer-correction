@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Background Image */
+body {
+  background-image: url('/background.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+}
+
+/* Overlay for better text readability - subtle with slight warm tint */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(248, 250, 252, 0.8) 100%);
+  backdrop-filter: blur(0.5px);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+    background-size: cover;
+  }
+  
+  body::before {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.82) 0%, rgba(248, 250, 252, 0.85) 100%);
+  }
+}
+
+/* Inertia Carousel Styles */
+[data-animate='inertia'] {
+  -webkit-perspective: 5000px;
+  perspective: 5000px;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+[data-inertia-container] {
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
+
+[data-inertia-item] {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* Smooth touch interactions */
+@media (hover: none) and (pointer: coarse) {
+  [data-animate='inertia'] {
+    touch-action: pan-x;
+  }
+}
+
+/* Prevent text selection during drag */
+[data-animate='inertia'] * {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Admin Dashboard Background - Responsive */
+.admin-dashboard-bg {
+  background-attachment: fixed;
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard-bg {
+    background-attachment: scroll;
+  }
+}
+
