@@ -1,21 +1,43 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { PrismaClient } from '@prisma/client'
 
 export const dynamic = 'force-dynamic'
 
 // One-time database initialization endpoint
-// Call this once to create tables: GET /api/admin/init-db
+// Visit: https://your-app.vercel.app/api/admin/init-db
+// This will create all database tables
 export async function GET() {
+  const prisma = new PrismaClient()
+  
   try {
-    // Test connection
+    // Test connection first
     await prisma.$connect()
     
-    // Push schema to create tables
-    const { execSync } = require('child_process')
-    execSync('npx prisma db push --accept-data-loss', { 
-      stdio: 'pipe',
-      env: process.env 
-    })
+    // Create tables by running a simple query that will trigger table creation
+    // Prisma will automatically create tables if they don't exist when we try to use them
+    // But we need to use Prisma Migrate or db push
+    
+    // Since we can't run shell commands in serverless, we'll use Prisma's programmatic API
+    // The simplest way is to try to query the table - if it doesn't exist, we'll get an error
+    // But actually, we need to use Prisma Migrate or db push
+    
+    // Alternative: Use Prisma's $executeRaw to create tables manually
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS "Student" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "myMatriculationNumber" TEXT NOT NULL UNIQUE,
+        "paperReceivedMatriculationNumber" TEXT NOT NULL,
+        "name" TEXT,
+        "email" TEXT NOT NULL,
+        "whatsappNumber" TEXT NOT NULL,
+        "consentGivenAt" TIMESTAMP(3) NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL
+      );
+      
+      CREATE INDEX IF NOT EXISTS "Student_paperReceivedMatriculationNumber_idx" 
+      ON "Student"("paperReceivedMatriculationNumber");
+    `)
     
     return NextResponse.json({ 
       success: true, 
@@ -23,6 +45,15 @@ export async function GET() {
     })
   } catch (error: any) {
     console.error('Database initialization error:', error)
+    
+    // If table already exists, that's okay
+    if (error.message?.includes('already exists') || error.code === '42P07') {
+      return NextResponse.json({ 
+        success: true, 
+        message: 'Database tables already exist!' 
+      })
+    }
+    
     return NextResponse.json(
       { 
         success: false, 
@@ -31,6 +62,8 @@ export async function GET() {
       },
       { status: 500 }
     )
+  } finally {
+    await prisma.$disconnect()
   }
 }
 
