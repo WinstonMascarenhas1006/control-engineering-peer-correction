@@ -25,7 +25,7 @@ export async function GET() {
     // This matches the exact schema from prisma/schema.prisma
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "Student" (
-        "id" TEXT NOT NULL,
+        "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
         "myMatriculationNumber" TEXT NOT NULL,
         "paperReceivedMatriculationNumber" TEXT NOT NULL,
         "name" TEXT,
@@ -33,7 +33,7 @@ export async function GET() {
         "whatsappNumber" TEXT NOT NULL,
         "consentGivenAt" TIMESTAMP(3) NOT NULL,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "Student_pkey" PRIMARY KEY ("id"),
         CONSTRAINT "Student_myMatriculationNumber_key" UNIQUE ("myMatriculationNumber")
       );
