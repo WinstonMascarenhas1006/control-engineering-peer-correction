@@ -94,6 +94,9 @@ export async function POST(request: NextRequest) {
     )
   } catch (error: any) {
     console.error('Registration error:', error)
+    console.error('Error code:', error.code)
+    console.error('Error message:', error.message)
+    console.error('Full error:', JSON.stringify(error, null, 2))
     
     // Handle unique constraint violation
     if (error.code === 'P2002') {
@@ -121,8 +124,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Return more detailed error in development
+    const errorMessage = process.env.NODE_ENV === 'development' 
+      ? error.message || 'Internal server error'
+      : 'Internal server error'
+    
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { 
+        error: errorMessage,
+        code: error.code,
+        details: process.env.NODE_ENV === 'development' ? error.toString() : undefined
+      },
       { status: 500 }
     )
   }
