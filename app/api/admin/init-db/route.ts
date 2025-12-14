@@ -21,18 +21,21 @@ export async function GET() {
     // The simplest way is to try to query the table - if it doesn't exist, we'll get an error
     // But actually, we need to use Prisma Migrate or db push
     
-    // Alternative: Use Prisma's $executeRaw to create tables manually
+    // Create tables using Prisma's schema
+    // This matches the exact schema from prisma/schema.prisma
     await prisma.$executeRawUnsafe(`
       CREATE TABLE IF NOT EXISTS "Student" (
-        "id" TEXT NOT NULL PRIMARY KEY,
-        "myMatriculationNumber" TEXT NOT NULL UNIQUE,
+        "id" TEXT NOT NULL,
+        "myMatriculationNumber" TEXT NOT NULL,
         "paperReceivedMatriculationNumber" TEXT NOT NULL,
         "name" TEXT,
         "email" TEXT NOT NULL,
         "whatsappNumber" TEXT NOT NULL,
         "consentGivenAt" TIMESTAMP(3) NOT NULL,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        "updatedAt" TIMESTAMP(3) NOT NULL
+        "updatedAt" TIMESTAMP(3) NOT NULL,
+        CONSTRAINT "Student_pkey" PRIMARY KEY ("id"),
+        CONSTRAINT "Student_myMatriculationNumber_key" UNIQUE ("myMatriculationNumber")
       );
       
       CREATE INDEX IF NOT EXISTS "Student_paperReceivedMatriculationNumber_idx" 
