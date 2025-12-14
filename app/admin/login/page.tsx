@@ -40,7 +40,7 @@ export default function AdminLoginPage() {
 
   return (
     <main 
-      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative"
+      className="min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative admin-dashboard-bg"
       style={{
         backgroundImage: 'url(/adminbg.jpg)',
         backgroundSize: 'cover',
@@ -48,7 +48,6 @@ export default function AdminLoginPage() {
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
       }}
-      className="admin-dashboard-bg"
     >
       <div className="absolute inset-0 bg-white/92 backdrop-blur-[2px] z-0"></div>
       <div className="relative z-10 max-w-md mx-auto">

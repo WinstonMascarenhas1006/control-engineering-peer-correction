@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import BackButton from './BackButton'
 
@@ -25,7 +25,7 @@ export default function AdminDashboard() {
   const [autoRefresh, setAutoRefresh] = useState(false)
   const [error, setError] = useState('')
 
-  const fetchRoster = async () => {
+  const fetchRoster = useCallback(async () => {
     try {
       const response = await fetch('/api/admin/roster')
       
@@ -47,11 +47,11 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [router])
 
   useEffect(() => {
     fetchRoster()
-  }, [])
+  }, [fetchRoster])
 
   useEffect(() => {
     if (autoRefresh) {
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
 
       return () => clearInterval(interval)
     }
-  }, [autoRefresh])
+  }, [autoRefresh, fetchRoster])
 
   useEffect(() => {
     if (searchTerm.trim() === '') {

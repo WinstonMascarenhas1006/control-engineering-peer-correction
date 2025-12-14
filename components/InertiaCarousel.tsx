@@ -235,6 +235,7 @@ export default function InertiaCarousel() {
                 }`}
                 style={{ aspectRatio: '517/439' }}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={src}
                   alt={`Animation frame ${index + 1}`}

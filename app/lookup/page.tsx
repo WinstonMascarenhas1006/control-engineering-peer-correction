@@ -154,7 +154,7 @@ export default function LookupPage() {
                   onClick={() => setShowMatric(!showMatric)}
                   className="text-blue-600 hover:underline text-sm"
                 >
-                  {showMatric ? 'Hide' : 'Show'} Corrector's Matriculation Number
+                  {showMatric ? 'Hide' : 'Show'} Corrector&apos;s Matriculation Number
                 </button>
                 {showMatric && (
                   <p className="mt-1">

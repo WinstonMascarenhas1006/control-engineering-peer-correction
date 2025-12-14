@@ -16,7 +16,7 @@ export default function Home() {
             Peer Correction Lookup
           </h1>
           <p className="text-lg text-gray-600 mb-8">
-            Connect with your peer corrector. Register your details and find who's correcting your paper.
+            Connect with your peer corrector. Register your details and find who&apos;s correcting your paper.
           </p>
         </div>
 
