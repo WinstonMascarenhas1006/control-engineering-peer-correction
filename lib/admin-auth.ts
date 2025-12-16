@@ -1,8 +1,8 @@
 import { cookies } from 'next/headers'
 
 const ADMIN_COOKIE_NAME = 'admin_session'
-const ADMIN_USERNAME = '71791'
-const ADMIN_PASSWORD = '71791'
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || '71791'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '71791'
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'admin-authenticated'
 
 export async function verifyAdminSession(): Promise<boolean> {

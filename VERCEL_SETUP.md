@@ -1,5 +1,12 @@
 # Vercel Deployment Setup Guide
 
+## 🚀 Quick Start
+
+1. **Import your GitHub repo to Vercel**
+2. **Add Environment Variables** (see below)
+3. **Click Deploy**
+4. **Run database migrations** after first deploy (see Post-Deployment Steps)
+
 ## Current Configuration ✅
 
 Your Vercel import screen shows:
@@ -79,11 +86,34 @@ After deployment, you need to run Prisma migrations. You can do this via:
 
 1. **Vercel CLI** (recommended):
    ```bash
-   npx vercel env pull .env.local
-   npx prisma migrate deploy
+   # Install Vercel CLI if you haven't
+   npm i -g vercel
+   
+   # Login to Vercel
+   vercel login
+   
+   # Link your project
+   vercel link
+   
+   # Pull environment variables
+   vercel env pull .env.local
+   
+   # Run migrations
+   npm run db:migrate:deploy
    ```
 
-2. **Or use Prisma Studio** locally with the production DATABASE_URL
+2. **Or use Prisma Studio** locally with the production DATABASE_URL:
+   ```bash
+   # Set DATABASE_URL in your terminal
+   $env:DATABASE_URL="your-production-database-url"
+   npm run db:studio
+   ```
+
+3. **Or push schema directly** (for initial setup):
+   ```bash
+   vercel env pull .env.local
+   npm run db:push
+   ```
 
 #### C. Update NEXT_PUBLIC_APP_URL
 
