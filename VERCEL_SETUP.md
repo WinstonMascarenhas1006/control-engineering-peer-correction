@@ -151,6 +151,12 @@ Before clicking "Deploy":
 - Verify DATABASE_URL in environment variables
 - Check Prisma schema matches database
 
+### Security Question Migration (New Feature)
+If you're updating an existing deployment with the security question feature:
+1. Run the migration SQL manually on your database, or
+2. Use Prisma migrate: `npx prisma migrate deploy`
+3. Existing users will need to re-register or the system will use default values
+
 ## Need Help?
 
 - Vercel Docs: https://vercel.com/docs
