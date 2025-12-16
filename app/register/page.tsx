@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 const SECURITY_QUESTIONS = [
-  "What is your mother&apos;s maiden name?",
   "What city were you born in?",
   "What was the name of your first pet?",
   "What was your childhood nickname?",
   "What is the name of your favorite teacher?",
   "What is your favorite food?",
+  "What is your favorite movie?",
+  "What was the name of your elementary school?",
+  "What is your favorite color?",
 ]
 
 export default function RegisterPage() {
