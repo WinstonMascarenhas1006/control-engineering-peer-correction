@@ -32,7 +32,8 @@ export default function AdminLoginPage() {
         return
       }
 
-      router.push('/admin')
+      // Use window.location for full page reload to ensure cookie is sent
+      window.location.href = '/admin'
     } catch (error) {
       setError('Network error. Please try again.')
       setIsLoading(false)
