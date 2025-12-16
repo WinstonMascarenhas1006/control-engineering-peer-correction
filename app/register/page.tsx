@@ -86,7 +86,18 @@ export default function RegisterPage() {
       const data = await response.json()
 
       if (!response.ok) {
-        setErrors({ submit: data.error || 'Registration failed. Please try again.' })
+        // Show specific error message for duplicate matriculation numbers
+        const errorMessage = data.error || 'Registration failed. Please try again.'
+        setErrors({ submit: errorMessage })
+        
+        // If it's a duplicate error, also highlight the matriculation number field
+        if (response.status === 409 && errorMessage.includes('already registered')) {
+          setErrors({ 
+            submit: errorMessage,
+            myMatriculationNumber: 'This matriculation number is already registered'
+          })
+        }
+        
         setIsSubmitting(false)
         return
       }
