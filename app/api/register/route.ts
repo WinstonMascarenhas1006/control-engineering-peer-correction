@@ -81,6 +81,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Auto-migrate: Add security question columns if they don't exist
+    try {
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "Student" 
+        ADD COLUMN IF NOT EXISTS "securityQuestion" TEXT NOT NULL DEFAULT '';
+      `)
+      
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "Student" 
+        ADD COLUMN IF NOT EXISTS "securityAnswer" TEXT NOT NULL DEFAULT '';
+      `)
+    } catch (migrationError: any) {
+      // Ignore errors if columns already exist or other non-critical issues
+      if (!migrationError.message?.includes('already exists') && 
+          !migrationError.message?.includes('duplicate') &&
+          !migrationError.message?.includes('does not exist')) {
+        console.warn('Migration warning (non-critical):', migrationError.message)
+      }
+    }
+
     // Create new registration
     const student = await prisma.student.create({
       data: {

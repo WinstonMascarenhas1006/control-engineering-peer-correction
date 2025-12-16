@@ -25,6 +25,25 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Auto-migrate: Add security question columns if they don't exist
+    try {
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "Student" 
+        ADD COLUMN IF NOT EXISTS "securityQuestion" TEXT NOT NULL DEFAULT '';
+      `)
+      
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "Student" 
+        ADD COLUMN IF NOT EXISTS "securityAnswer" TEXT NOT NULL DEFAULT '';
+      `)
+    } catch (migrationError: any) {
+      // Ignore errors if columns already exist
+      if (!migrationError.message?.includes('already exists') && 
+          !migrationError.message?.includes('duplicate')) {
+        console.warn('Migration warning (non-critical):', migrationError.message)
+      }
+    }
+
     // Check if the student is registered
     const student = await prisma.student.findUnique({
       where: { myMatriculationNumber: matriculationNumber },
@@ -43,6 +62,30 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Handle legacy records without security questions
+    if (!student.securityQuestion || student.securityQuestion === '') {
+      // For old records without security questions, allow lookup without verification
+      // This maintains backward compatibility
+      const corrector = await prisma.student.findFirst({
+        where: {
+          paperReceivedMatriculationNumber: matriculationNumber,
+        },
+        select: {
+          name: true,
+          email: true,
+          whatsappNumber: true,
+          myMatriculationNumber: true,
+        },
+      })
+
+      const myPaperInfo = student.paperReceivedMatriculationNumber
+
+      return NextResponse.json({
+        corrector: corrector || null,
+        myPaperInfo: myPaperInfo || null,
+      })
+    }
+
     // If security answer is not provided, return the security question
     if (!securityAnswer) {
       return NextResponse.json({
@@ -53,7 +96,7 @@ export async function POST(request: NextRequest) {
 
     // Verify security answer (case-insensitive comparison)
     const providedAnswer = securityAnswer.trim().toLowerCase()
-    const storedAnswer = student.securityAnswer.toLowerCase()
+    const storedAnswer = (student.securityAnswer || '').toLowerCase()
 
     if (providedAnswer !== storedAnswer) {
       return NextResponse.json(
