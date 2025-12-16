@@ -113,6 +113,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Handle database schema mismatch (missing columns)
+    if (error.message && (
+      error.message.includes('Unknown column') || 
+      error.message.includes('column') && error.message.includes('does not exist') ||
+      error.message.includes('securityQuestion') ||
+      error.message.includes('securityAnswer')
+    )) {
+      return NextResponse.json(
+        { 
+          error: 'Database schema needs to be updated. Please run database migration.',
+          code: 'SCHEMA_MISMATCH',
+          details: process.env.NODE_ENV === 'development' ? error.message : undefined
+        },
+        { status: 500 }
+      )
+    }
+
     // Return more detailed error in development
     const errorMessage = process.env.NODE_ENV === 'development' 
       ? error.message || 'Internal server error'

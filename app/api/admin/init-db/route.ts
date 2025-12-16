@@ -31,6 +31,8 @@ export async function GET() {
         "name" TEXT,
         "email" TEXT NOT NULL,
         "whatsappNumber" TEXT NOT NULL,
+        "securityQuestion" TEXT NOT NULL DEFAULT '',
+        "securityAnswer" TEXT NOT NULL DEFAULT '',
         "consentGivenAt" TIMESTAMP(3) NOT NULL,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -41,6 +43,24 @@ export async function GET() {
       CREATE INDEX IF NOT EXISTS "Student_paperReceivedMatriculationNumber_idx" 
       ON "Student"("paperReceivedMatriculationNumber");
     `)
+    
+    // Add security question columns if table exists but columns don't
+    try {
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "Student" 
+        ADD COLUMN IF NOT EXISTS "securityQuestion" TEXT NOT NULL DEFAULT '';
+      `)
+      
+      await prisma.$executeRawUnsafe(`
+        ALTER TABLE "Student" 
+        ADD COLUMN IF NOT EXISTS "securityAnswer" TEXT NOT NULL DEFAULT '';
+      `)
+    } catch (error: any) {
+      // Columns might already exist, that's okay
+      if (!error.message?.includes('already exists') && !error.message?.includes('duplicate')) {
+        console.warn('Could not add security question columns:', error.message)
+      }
+    }
     
     return NextResponse.json({ 
       success: true, 
