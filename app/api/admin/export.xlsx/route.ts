@@ -1,15 +1,18 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyAdminSession } from '@/lib/admin-auth'
 import ExcelJS from 'exceljs'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const isAuthenticated = await verifyAdminSession()
 
     if (!isAuthenticated) {
+      const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+      console.warn(`[SECURITY] Unauthorized admin export attempt from IP: ${ip} at ${new Date().toISOString()}`)
+      
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -63,6 +66,10 @@ export async function GET() {
     // Generate buffer
     const buffer = await workbook.xlsx.writeBuffer()
 
+    // Log export for audit trail
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    console.log(`[SECURITY] Admin exported roster (${students.length} records) from IP: ${ip} at ${new Date().toISOString()}`)
+
     // Return as downloadable file
     return new NextResponse(buffer, {
       headers: {
@@ -71,7 +78,7 @@ export async function GET() {
       },
     })
   } catch (error) {
-    console.error('Export error:', error)
+    console.error('[SECURITY] Export error:', error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
