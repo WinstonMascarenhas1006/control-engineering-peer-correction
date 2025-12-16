@@ -17,6 +17,8 @@ model Student {
   name                          String?
   email                         String
   whatsappNumber                String
+  securityQuestion              String
+  securityAnswer                String
   consentGivenAt                DateTime
   createdAt                     DateTime @default(now())
   updatedAt                     DateTime @updatedAt

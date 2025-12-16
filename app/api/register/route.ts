@@ -21,6 +21,8 @@ export async function POST(request: NextRequest) {
     name,
     email,
     whatsappNumber,
+    securityQuestion,
+    securityAnswer,
   } = body
 
   try {
@@ -53,6 +55,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    if (!securityQuestion || !securityAnswer) {
+      return NextResponse.json(
+        { error: 'Security question and answer are required' },
+        { status: 400 }
+      )
+    }
+
+    if (securityAnswer.trim().length < 3) {
+      return NextResponse.json(
+        { error: 'Security answer must be at least 3 characters' },
+        { status: 400 }
+      )
+    }
+
     // Check if student already exists
     const existing = await prisma.student.findUnique({
       where: { myMatriculationNumber },
@@ -73,6 +89,8 @@ export async function POST(request: NextRequest) {
         name: name || null,
         email,
         whatsappNumber,
+        securityQuestion: securityQuestion.trim(),
+        securityAnswer: securityAnswer.trim().toLowerCase(), // Store lowercase for case-insensitive comparison
         consentGivenAt: new Date(),
       },
     })

@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { matriculationNumber } = body
+    const { matriculationNumber, securityAnswer } = body
 
     if (!matriculationNumber) {
       return NextResponse.json(
@@ -28,6 +28,12 @@ export async function POST(request: NextRequest) {
     // Check if the student is registered
     const student = await prisma.student.findUnique({
       where: { myMatriculationNumber: matriculationNumber },
+      select: {
+        id: true,
+        securityQuestion: true,
+        securityAnswer: true,
+        paperReceivedMatriculationNumber: true,
+      },
     })
 
     if (!student) {
@@ -37,6 +43,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // If security answer is not provided, return the security question
+    if (!securityAnswer) {
+      return NextResponse.json({
+        requiresSecurityAnswer: true,
+        securityQuestion: student.securityQuestion,
+      })
+    }
+
+    // Verify security answer (case-insensitive comparison)
+    const providedAnswer = securityAnswer.trim().toLowerCase()
+    const storedAnswer = student.securityAnswer.toLowerCase()
+
+    if (providedAnswer !== storedAnswer) {
+      return NextResponse.json(
+        { error: 'INVALID_SECURITY_ANSWER', message: 'Incorrect security answer. Please try again.' },
+        { status: 401 }
+      )
+    }
+
+    // Security answer is correct, now return the corrector information
     // Find the corrector (student who has this student's paper)
     const corrector = await prisma.student.findFirst({
       where: {

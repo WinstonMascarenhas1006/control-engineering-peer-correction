@@ -4,6 +4,15 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
+const SECURITY_QUESTIONS = [
+  "What is your mother&apos;s maiden name?",
+  "What city were you born in?",
+  "What was the name of your first pet?",
+  "What was your childhood nickname?",
+  "What is the name of your favorite teacher?",
+  "What is your favorite food?",
+]
+
 export default function RegisterPage() {
   const router = useRouter()
   const [formData, setFormData] = useState({
@@ -12,6 +21,8 @@ export default function RegisterPage() {
     name: '',
     email: '',
     whatsappNumber: '',
+    securityQuestion: '',
+    securityAnswer: '',
     consent: false,
   })
   const [honeypot, setHoneypot] = useState('')
@@ -44,6 +55,16 @@ export default function RegisterPage() {
       newErrors.whatsappNumber = 'WhatsApp number is required'
     } else if (!/^\+?[1-9]\d{1,14}$/.test(formData.whatsappNumber.replace(/\s/g, ''))) {
       newErrors.whatsappNumber = 'Invalid WhatsApp number format (include country code, e.g., +1234567890)'
+    }
+
+    if (!formData.securityQuestion.trim()) {
+      newErrors.securityQuestion = 'Please select a security question'
+    }
+
+    if (!formData.securityAnswer.trim()) {
+      newErrors.securityAnswer = 'Security answer is required'
+    } else if (formData.securityAnswer.trim().length < 3) {
+      newErrors.securityAnswer = 'Security answer must be at least 3 characters'
     }
 
     if (!formData.consent) {
@@ -80,6 +101,8 @@ export default function RegisterPage() {
           name: formData.name.trim() || null,
           email: formData.email.trim(),
           whatsappNumber: formData.whatsappNumber.trim(),
+          securityQuestion: formData.securityQuestion.trim(),
+          securityAnswer: formData.securityAnswer.trim(),
         }),
       })
 
@@ -228,6 +251,53 @@ export default function RegisterPage() {
             {errors.whatsappNumber && (
               <p className="mt-1 text-sm text-red-600">{errors.whatsappNumber}</p>
             )}
+          </div>
+
+          <div>
+            <label htmlFor="securityQuestion" className="block text-sm font-medium text-gray-700 mb-1">
+              Security Question <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="securityQuestion"
+              value={formData.securityQuestion}
+              onChange={(e) => setFormData({ ...formData, securityQuestion: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            >
+              <option value="">Select a security question</option>
+              {SECURITY_QUESTIONS.map((question, index) => (
+                <option key={index} value={question}>
+                  {question}
+                </option>
+              ))}
+            </select>
+            {errors.securityQuestion && (
+              <p className="mt-1 text-sm text-red-600">{errors.securityQuestion}</p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">
+              This will be used to verify your identity when looking up your corrector information.
+            </p>
+          </div>
+
+          <div>
+            <label htmlFor="securityAnswer" className="block text-sm font-medium text-gray-700 mb-1">
+              Security Answer <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              id="securityAnswer"
+              value={formData.securityAnswer}
+              onChange={(e) => setFormData({ ...formData, securityAnswer: e.target.value })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Enter your answer"
+              required
+            />
+            {errors.securityAnswer && (
+              <p className="mt-1 text-sm text-red-600">{errors.securityAnswer}</p>
+            )}
+            <p className="mt-1 text-xs text-gray-500">
+              Remember this answer - you&apos;ll need it to access your corrector information.
+            </p>
           </div>
 
           <div>
