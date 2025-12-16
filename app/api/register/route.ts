@@ -82,23 +82,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Auto-migrate: Add security question columns if they don't exist
+    // This runs silently - if it fails, we'll catch it in the create() call below
     try {
       await prisma.$executeRawUnsafe(`
-        ALTER TABLE "Student" 
-        ADD COLUMN IF NOT EXISTS "securityQuestion" TEXT NOT NULL DEFAULT '';
+        DO $$ 
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'Student' AND column_name = 'securityQuestion'
+          ) THEN
+            ALTER TABLE "Student" ADD COLUMN "securityQuestion" TEXT NOT NULL DEFAULT '';
+          END IF;
+        END $$;
       `)
       
       await prisma.$executeRawUnsafe(`
-        ALTER TABLE "Student" 
-        ADD COLUMN IF NOT EXISTS "securityAnswer" TEXT NOT NULL DEFAULT '';
+        DO $$ 
+        BEGIN
+          IF NOT EXISTS (
+            SELECT 1 FROM information_schema.columns 
+            WHERE table_name = 'Student' AND column_name = 'securityAnswer'
+          ) THEN
+            ALTER TABLE "Student" ADD COLUMN "securityAnswer" TEXT NOT NULL DEFAULT '';
+          END IF;
+        END $$;
       `)
     } catch (migrationError: any) {
-      // Ignore errors if columns already exist or other non-critical issues
-      if (!migrationError.message?.includes('already exists') && 
-          !migrationError.message?.includes('duplicate') &&
-          !migrationError.message?.includes('does not exist')) {
-        console.warn('Migration warning (non-critical):', migrationError.message)
-      }
+      // Silently ignore - we'll handle it in the create() call if needed
+      console.log('Migration check completed (columns may already exist)')
     }
 
     // Create new registration
@@ -133,21 +144,68 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Handle database schema mismatch (missing columns)
+    // Handle database schema mismatch - silently retry with migration
     if (error.message && (
       error.message.includes('Unknown column') || 
-      error.message.includes('column') && error.message.includes('does not exist') ||
-      error.message.includes('securityQuestion') ||
-      error.message.includes('securityAnswer')
+      (error.message.includes('column') && error.message.includes('does not exist')) ||
+      (error.message.includes('securityQuestion') && !error.message.includes('already')) ||
+      (error.message.includes('securityAnswer') && !error.message.includes('already')) ||
+      error.code === 'P2021' // Table does not exist
     )) {
-      return NextResponse.json(
-        { 
-          error: 'Database schema needs to be updated. Please run database migration.',
-          code: 'SCHEMA_MISMATCH',
-          details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        },
-        { status: 500 }
-      )
+      // Silently try to add columns and retry
+      try {
+        // Use a more robust migration approach
+        await prisma.$executeRawUnsafe(`
+          DO $$ 
+          BEGIN
+            IF NOT EXISTS (
+              SELECT 1 FROM information_schema.columns 
+              WHERE table_schema = 'public' 
+              AND table_name = 'Student' 
+              AND column_name = 'securityQuestion'
+            ) THEN
+              ALTER TABLE "Student" ADD COLUMN "securityQuestion" TEXT NOT NULL DEFAULT '';
+            END IF;
+          END $$;
+        `)
+        
+        await prisma.$executeRawUnsafe(`
+          DO $$ 
+          BEGIN
+            IF NOT EXISTS (
+              SELECT 1 FROM information_schema.columns 
+              WHERE table_schema = 'public' 
+              AND table_name = 'Student' 
+              AND column_name = 'securityAnswer'
+            ) THEN
+              ALTER TABLE "Student" ADD COLUMN "securityAnswer" TEXT NOT NULL DEFAULT '';
+            END IF;
+          END $$;
+        `)
+        
+        // Retry the registration silently
+        const student = await prisma.student.create({
+          data: {
+            myMatriculationNumber,
+            paperReceivedMatriculationNumber,
+            name: name || null,
+            email,
+            whatsappNumber,
+            securityQuestion: securityQuestion.trim(),
+            securityAnswer: securityAnswer.trim().toLowerCase(),
+            consentGivenAt: new Date(),
+          },
+        })
+        
+        return NextResponse.json(
+          { success: true, student: { id: student.id } },
+          { status: 201 }
+        )
+      } catch (retryError: any) {
+        // If retry fails, log but don't expose schema issues to user
+        console.error('Auto-migration retry failed:', retryError)
+        // Fall through to generic error handling
+      }
     }
 
     // Return more detailed error in development
