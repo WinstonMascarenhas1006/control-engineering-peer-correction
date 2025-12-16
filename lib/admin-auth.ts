@@ -2,9 +2,9 @@ import { cookies } from 'next/headers'
 import { randomBytes } from 'crypto'
 
 const ADMIN_COOKIE_NAME = 'admin_session'
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || '71791'
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '71791'
-const ADMIN_SECRET = process.env.ADMIN_SECRET || 'admin-authenticated'
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || '17P3129'
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'mindyourwork'
+const ADMIN_SECRET = process.env.ADMIN_SECRET || 'ckXdEemNyM1irAB9Qag4ut8YZUfJOzoHKWG7jCPpD6v0lTVS5FLhqRI23bxwns'
 
 // In-memory session store (in production, use Redis or database)
 interface SessionData {
